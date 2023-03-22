@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 import MoviesList from "./components/MoviesList";
 import "./App.css";
@@ -26,13 +26,12 @@ function App() {
     //     setMovies(transformedMovies);
     //   });
     try {
-      const response = await fetch("https://swapi.dev/api/film/");
+      const response = await fetch("https://swapi.dev/api/films/");
       if (!response.ok) {
         throw new Error("Something Went Wrong!...Retrying");
       }
       const data = await response.json();
 
-      
       const transformedMovies = data.results.map((movieData) => {
         return {
           id: movieData.episode_id,
@@ -44,39 +43,43 @@ function App() {
       setMovies(transformedMovies);
     } catch (error) {
       setError(error.message);
-      
     }
     setIsLoading(false);
   }
-  let content = <p>Found No Movies!</p>
-  if(movies.length > 0) {
-    content = <MoviesList movies={movies} />
+  let content = <p>Found No Movies!</p>;
+  if (movies.length > 0) {
+    content = <MoviesList movies={movies} />;
   }
 
-  if(error) {
-    content = <p>{error}</p>
+  if (error) {
+    content = <p>{error}</p>;
   }
 
-  if(isLoading) {
-    content = <p>Loading...</p>
+  if (isLoading) {
+    content = <p>Loading...</p>;
   }
 
-  if(error) {
+  if (error) {
     let id = setTimeout(() => {
-      fetchMoviesHandler()
-    }, 5000)
+      fetchMoviesHandler();
+    }, 5000);
+    localStorage.setItem("settimeoutid", id);
     // console.log(id)
   }
-  
+  const cancelFetchMoviesHandler = () => {
+    const id = localStorage.getItem("settimeoutid");
+    clearTimeout(id);
+    setError(null);
+  };
+  useEffect(fetchMoviesHandler, [])
+
   return (
     <React.Fragment>
       <section>
         <button onClick={fetchMoviesHandler}>Fetch Movies</button>
-        <button>Cancel Fetch Movies</button>
+        <button onClick={cancelFetchMoviesHandler}>Cancel Fetch Movies</button>
       </section>
-      <section>
-        {content}
-      </section>
+      <section>{content}</section>
     </React.Fragment>
   );
 }
